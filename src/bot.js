@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const TelegramBot = require('node-telegram-bot-api');
 const Client = require('coinbase').Client;
+const CDP = require('@coinbase/coinbase-sdk');
 let fetch;
 import('node-fetch').then(module => {
     fetch = module.default;
@@ -129,6 +130,34 @@ bot.onText(/\/marketstats(.*)/, async (msg, match) => {
     }
 });
 
+// command handler to create a wallet
+bot.onText(/\/createwallet/, async (msg, match) => {
+    const chatId = msg.chat.id;
+    const walletName = match[1];
+
+    // Initialize CDP client (ensure you have proper authentication set up)
+    const Coinbase = CDP.Coinbase;
+    Coinbase.configure({
+        'apiKeyName': cbAPIKeyName,
+        'privateKey': cbAPISecret
+    });
+
+    console.log("Making request to create wallet...");
+
+    try {
+        const Wallet = CDP.Wallet;
+        const wallet = await CDP.Wallet.create();
+        const address = await wallet.getDefaultAddress();
+        
+        const responseMessage = `Wallet created successfully!
+        Wallet: ${address}`;
+
+        bot.sendMessage(chatId, responseMessage);
+    } catch (error) {
+        console.error('Error creating wallet:', error);
+        bot.sendMessage(chatId, 'An error occurred while creating the wallet. Please try again.');
+    }
+});
 
 console.log('Bot setup completed');
 module.exports = bot;
