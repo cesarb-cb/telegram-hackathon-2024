@@ -109,7 +109,6 @@ bot.onText(/\/marketstats(.*)/, async (msg, match) => {
             }
         });
         const stats = await response.json();
-        console.log(stats)
         if (stats.message === 'NotFound') {
             bot.sendMessage(chatId, `Sorry, no data found for ${currency}. Please check if the cryptocurrency symbol is correct.`);
             return;
@@ -146,11 +145,14 @@ bot.onText(/\/createwallet/, async (msg, match) => {
 
     try {
         const Wallet = CDP.Wallet;
-        const wallet = await CDP.Wallet.create();
+        const wallet = await Wallet.create();
         const address = await wallet.getDefaultAddress();
-        
+        const addressResponse = JSON.parse(JSON.stringify(address, null, 2).replace(/^WalletAddress\s*/, '').trim());
+
         const responseMessage = `Wallet created successfully!
-        Wallet: ${address}`;
+        Wallet ID: ${addressResponse.model.wallet_id}
+        Public Key: ${addressResponse.model.public_key}
+        Network: ${addressResponse.networkId}`;
 
         bot.sendMessage(chatId, responseMessage);
     } catch (error) {
